@@ -7,7 +7,7 @@ namespace Zedstar16\OnlineTime;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
@@ -53,7 +53,7 @@ class Main extends PluginBase implements Listener
                 return false;
             }
             $h = base64_decode("wqdkPS09LT3Cp2FPbmxpbmXCp2JUaW1lIEhlbHDCp2Q9LT0tPQrCp2Ivb3QgdG9wIFtwYWdlXSAgwqdhVmlldyB0aGUgdG9wIG1vc3QgYWN0aXZlIHBsYXllcnMKwqdiL290IHRvdGFsIFtwbGF5ZXJdICDCp2FWaWV3IGhvdyBsb25nIHlvdSBvciB0aGUgcGxheWVyIHlvdSBzZWxlY3RlZCBoYXZlIHNwZW50IG9ubGluZSBpbiB0b3RhbArCp2Ivb3Qgc2Vzc2lvbiBbcGxheWVyXSAgwqdhVmlldyBob3cgbG9uZyB5b3Ugb3IgdGhlIHBsYXllciB5b3Ugc2VsZWN0ZWQgaGF2ZSBzcGVudCBvbmxpbmUKwqdiL290IGluZm8gIMKnYVZpZXcgcGx1Z2luIHZlcnNpb24gYW5kIGNyZWRpdHMKCSAgICA==");
-            $c = base64_decode("wqdhT25saW5lwqdiVGltZQrCp2RWZXJzaW9uOiAxLjEKwqdjTWFkZSBCeTogwqdhWmVkc3RhcjE2LCDCp2JUd2l0dGVyOiDCp2VAWmVkc3RhcjE2MDM=");
+            $c = base64_decode("wqdhT25saW5lwqdiVGltZQrCp2RWZXJzaW9uOiAxLjQKwqdjTWFkZSBCeTogwqdhWmVkc3RhcjE2LCDCp2JUd2l0dGVyOiDCp2VAWmVkc3RhcjE2MDMKwqdiVXBkYXRlZCBCeTogwqdhUU1vb24=");
             if (isset($args[0])) {
                 switch ($args[0]) {
                     case "total":
@@ -62,8 +62,8 @@ class Main extends PluginBase implements Listener
                             $sender->sendMessage("§aYour total online time is: §b" . $time[0] . "§9hrs §b" . $time[1] . "§9mins §b" . $time[2] . "§9secs");
                         } else if (isset($args[1])) {
                             strtolower($args[1]);
-                            if ($this->getServer()->getPlayer($args[1]) !== null) {
-                                $name = $this->getServer()->getPlayer($args[1])->getName();
+                            if ($this->getServer()->getPlayerExact($args[1]) !== null) {
+                                $name = $this->getServer()->getPlayerExact($args[1])->getName();
                                 $time = explode(":", $this->getTotalTime($name));
                                 $sender->sendMessage("§aThe total online time of $name is: §b" . $time[0] . "§9hrs §b" . $time[1] . "§9mins §b" . $time[2] . "§9secs");
                             } else {
@@ -78,8 +78,8 @@ class Main extends PluginBase implements Listener
                             $time = explode(":", $this->getSessionTime($sender->getName()));
                             $sender->sendMessage("§aYour current session time is: §b" . $time[0] . "§9hrs §b" . $time[1] . "§9mins §b" . $time[2] . "§9secs");
                         } else if (isset($args[1])) {
-                            if ($this->getServer()->getPlayer($args[1]) !== null) {
-                                $name = $this->getServer()->getPlayer($args[1])->getName();
+                            if ($this->getServer()->getPlayerExact($args[1]) !== null) {
+                                $name = $this->getServer()->getPlayerExact($args[1])->getName();
                                 $time = explode(":", $this->getSessionTime($name));
                                 $sender->sendMessage("§aThe current session time of $name is: §b" . $time[0] . "§9hrs §b" . $time[1] . "§9mins §b" . $time[2] . "§9secs");
                             } else {
@@ -135,14 +135,14 @@ class Main extends PluginBase implements Listener
                         break;
                     default:
                         $sender->sendMessage($h);
-                        if ($sender->isOp()) {
+                        if ($sender->hasPermission("pocketmine.group.operator")) {
                             $sender->sendMessage("§b/ot reset all  §aReset All Online Time data");
                         }
                         return true;
                 }
             } else {
                 $sender->sendMessage($h);
-                if ($sender->isOp()) {
+                if ($sender->hasPermission("pocketmine.group.operator")) {
                     $sender->sendMessage("§b/ot reset all  §aReset All Online Time data");
                 }
             }
@@ -157,7 +157,7 @@ class Main extends PluginBase implements Listener
 
     public function getFormattedTime($t)
     {
-        $f = sprintf("%02d%s%02d%s%02d", floor(abs($t) / 3600), ":", (abs($t) / 60) % 60, ":", abs($t) % 60);
+        $f = sprintf("%02d%s%02d%s%02d", intval(floor(abs($t) / 3600)), ":", intval(abs($t) / 60) % 60, ":", intval(abs($t) % 60));
         $time = explode(":", $f);
         return $time[0] . "§9hrs §b" . $time[1] . "§9mins §b" . $time[2] . "§9secs";
     }
@@ -166,15 +166,15 @@ class Main extends PluginBase implements Listener
     {
         $pn = "$pn";
         $pn = strtolower($pn);
-        if ($this->getServer()->getPlayer($pn) !== null) {
-            $p = $this->getServer()->getPlayer($pn);
+        if ($this->getServer()->getPlayerExact($pn) !== null) {
+            $p = $this->getServer()->getPlayerExact($pn);
         } else $p = $pn;
         $totalsecs = $this->db->getRawTime($p);
-        if ($this->getServer()->getPlayer($pn) !== null) {
+        if ($this->getServer()->getPlayerExact($pn) !== null) {
             $t = (time() - self::$times[$pn]);
         } else $t = 0;
         $t = ($t + $totalsecs);
-        return ($t < 0 ? '-' : '') . sprintf("%02d%s%02d%s%02d", floor(abs($t) / 3600), ":", (abs($t) / 60) % 60, ":", abs($t) % 60);
+        return (intval($t) < 0 ? '-' : '') . sprintf("%02d%s%02d%s%02d", intval(floor(abs(intval($t)) / 3600)), ":", intval(abs(intval($t)) / 60) % 60, ":", intval(abs(intval($t)) % 60));
     }
 
     public function getSessionTime($pn): String
@@ -182,7 +182,7 @@ class Main extends PluginBase implements Listener
         $pn = "$pn";
         $pn = strtolower($pn);
         $t = time() - self::$times[$pn];
-        return ($t < 0 ? '-' : '') . sprintf("%02d%s%02d%s%02d", floor(abs($t) / 3600), ":", (abs($t) / 60) % 60, ":", abs($t) % 60);
+        return (intval($t) < 0 ? '-' : '') . sprintf("%02d%s%02d%s%02d", intval(floor(abs(intval($t)) / 3600)), ":", intval(abs(intval($t)) / 60) % 60, ":", intval(abs(intval($t)) % 60));
     }
 
     public function onDisable(): void
@@ -190,8 +190,8 @@ class Main extends PluginBase implements Listener
         foreach (self::$times as $player => $time) {
             $player = "$player";
             $player = strtolower($player);
-            if ($this->getServer()->getPlayer($player) !== null) {
-                $p = $this->getServer()->getPlayer($player);
+            if ($this->getServer()->getPlayerExact($player) !== null) {
+                $p = $this->getServer()->getPlayerExact($player);
             } else $p = $player;
             $old = $this->db->getRawTime($p);
             $this->db->setRawTime($p, ($old + (time() - self::$times[$player])));

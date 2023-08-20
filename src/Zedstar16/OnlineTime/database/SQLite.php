@@ -2,7 +2,7 @@
 
 namespace Zedstar16\OnlineTime\database;
 
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginException;
 use Zedstar16\OnlineTime\Main;
 
@@ -45,7 +45,7 @@ class SQLite
     public function getRawTime($player): ?int
     {
         if ($player instanceof Player) {
-            $uuid = $player->getRawUniqueId();
+            $uuid = $player->getUniqueId();
             $query = "SELECT time FROM players WHERE uuid = :uuid";
             $stmt = $this->database->prepare($query);
             $stmt->bindValue(":uuid", $uuid);
@@ -70,7 +70,7 @@ class SQLite
     public function hasTime($player): bool
     {
         if ($player instanceof Player) {
-            $uuid = $player->getRawUniqueId();
+            $uuid = $player->getUniqueId();
             $query = "SELECT time FROM players WHERE uuid = :uuid";
             $stmt = $this->database->prepare($query);
             $stmt->bindValue(":uuid", $uuid);
@@ -92,7 +92,7 @@ class SQLite
      */
     public function registerTime(Player $player)
     {
-        $uuid = $player->getRawUniqueId();
+        $uuid = $player->getUniqueId();
         $username = $player->getName();
         $query = "INSERT INTO players(uuid, username, time) VALUES(:uuid, :username, :time);";
         $stmt = $this->database->prepare($query);
@@ -112,7 +112,7 @@ class SQLite
     public function setRawTime($player, int $time)
     {
         if ($player instanceof Player) {
-            $uuid = $player->getRawUniqueId();
+            $uuid = $player->getUniqueId();
             $query = "UPDATE players SET time = :time WHERE uuid = :uuid";
             $stmt = $this->database->prepare($query);
             $stmt->bindValue(":time", $time);
